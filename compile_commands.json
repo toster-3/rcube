@@ -1,0 +1,21 @@
+[
+  {
+    "file": "src/main.cpp",
+    "arguments": [
+      "g++",
+      "-std=c++17",
+      "-pedantic",
+      "-Wall",
+      "-g",
+      "-O0",
+      "-DDEBUG",
+      "-Isrc",
+      "-c",
+      "src/main.cpp",
+      "-o",
+      "build/main.o"
+    ],
+    "directory": "/home/rose/proj/rcube",
+    "output": "build/main.o"
+  }
+]
