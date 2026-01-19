@@ -1,13 +1,10 @@
-#include <vector>
-
 #include "common.h"
 #include "raylib.h"
+#include "raymath.h"
 
 using namespace std;
 
 Global g;
-
-float dt = 1.f / 60.f;
 
 void init_game(void)
 {
@@ -24,43 +21,67 @@ Point point(Vector2 v)
 	return {cast(int)(v.x), cast(int)(v.y)};
 }
 
+static Matrix rot = MatrixIdentity();
 void input(void)
 {
-	static Vector2 mouseorig;
-	Vector2 mousepos = GetMousePosition();
-	float angle = PI * dt;
-	if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-		mouseorig = mousepos;
+	DrawText(TextFormat("yaw: %f, pitch: %f", g.ocam.yaw, g.ocam.pitch), 10, 10,
+	         20, FG);
+	if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+		Vector2 d = GetMouseDelta();
+		g.ocam.yaw -= d.x * 0.005f;
+		g.ocam.pitch += d.y * 0.003f;
+
+		g.ocam.pitch = Clamp(g.ocam.pitch, -1.553f, 1.553f);
 	}
 
-	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
-		Vector2 delta = {mousepos.x - mouseorig.x, mousepos.y - mouseorig.y};
-		DrawCircle(mouseorig.x, mouseorig.y, 10, FG);
-		DrawText(TextFormat("delta: (%f, %f)", delta.x, delta.y), 10, 10, 20,
-		         FG);
-		rotate_vs({0, -1, 0}, delta.x / 10000);
-		rotate_vs({-1, 0, 0}, delta.y / 10000);
+	if (IsKeyPressed(KEY_R)) {
+		g.ocam.yaw = 0;
+		g.ocam.pitch = 0;
 	}
 
-	if (IsKeyDown(KEY_LEFT)) {
-		rotate_vs({0, 1, 0}, angle);
-	}
-	if (IsKeyDown(KEY_RIGHT)) {
-		rotate_vs({0, 1, 0}, -angle);
-	}
-	if (IsKeyDown(KEY_UP)) {
-		rotate_vs({1, 0, 0}, angle);
-	}
-	if (IsKeyDown(KEY_DOWN)) {
-		rotate_vs({1, 0, 0}, -angle);
-	}
+	/*
+	    static Vector2 mouseorig;
+	    Vector2 mousepos = GetMousePosition();
+	    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+	        mouseorig = mousepos;
+	    }
+
+	    if (IsKeyPressed(KEY_R)) {
+	        rot = MatrixIdentity();
+	        g.model.transform = rot;
+	    }
+
+	    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+	        Vector2 delta = {mousepos.x - mouseorig.x, mousepos.y -
+	   mouseorig.y}; DrawCircle(mouseorig.x, mouseorig.y, 10, FG);
+	        DrawText(TextFormat("delta: (%f, %f)", delta.x, delta.y), 10, 10,
+	   20, FG);
+
+	        float sx = delta.x * 0.0001f;
+	        float sy = delta.y * 0.0001f;
+
+	        Vector3 cam_forward = Vector3Normalize(
+	            Vector3Subtract(g.camera.target, g.camera.position));
+	        Vector3 cam_right =
+	            Vector3Normalize(Vector3CrossProduct(cam_forward, g.camera.up));
+	        Vector3 cam_up = Vector3CrossProduct(cam_right, cam_forward);
+
+	        Matrix rot_y = MatrixRotate(cam_up, sx);
+	        Matrix rot_x = MatrixRotate(cam_right, sy);
+
+	        // IMPORTANT: pre-multiply (view-space)
+	        rot = MatrixMultiply(rot, rot_y);
+	        rot = MatrixMultiply(rot, rot_x);
+
+	        g.model.transform = rot;
+	    } */
 }
 
 int main(int argc, char **argv)
 {
 
 	init_game();
-	init_vs();
+	init_graphics();
 	while (!WindowShouldClose()) {
 		BeginDrawing();
 		ClearBackground(BG);
